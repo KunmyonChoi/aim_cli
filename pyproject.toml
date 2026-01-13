@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aim-cli"
+version = "0.1.0"
+description = "AI Model Weight Manager CLI"
+authors = [
+  { name = "AIM CLI Team", email = "aim-cli@example.com" },
+]
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "typer",
+    "rich",
+    "pydantic",
+    "pyyaml",
+    "boto3",
+]
+
+[project.scripts]
+aim = "aim_cli.main:app"
+aim_cli = "aim_cli.main:app"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["aim_cli*"]
