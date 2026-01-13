@@ -87,7 +87,7 @@ sequenceDiagram
 You can install the CLI directly from the source:
 
 ```bash
-pip install git+https://github.com/yourusername/aim-cli.git
+pip install git+https://github.com/KunmyonChoi/aim-cli.git
 ```
 
 ### Using `uv` (Recommended for Dev)
@@ -95,7 +95,7 @@ This project uses [uv](https://github.com/astral-sh/uv) for fast package managem
 
 ```bash
 # Clone the repo
-git clone https://github.com/yourusername/aim-cli.git
+git clone https://github.com/KunmyonChoi/aim-cli.git
 cd aim-cli
 
 # Sync dependencies
