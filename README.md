@@ -1,9 +1,40 @@
 # AIM CLI (AI Model Manager)
 
-A CLI tool to manage AI model weights using external storage (Local/NFS, S3).
-Inspired by HuggingFace CLI but for private infrastructure.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/release/python-390/)
+[![Code Style: Black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-## Concepts & Hierarchy
+A powerful CLI tool to manage AI model weights using external storage (Local/NFS, S3).  
+Designed for private infrastructure, offering a HuggingFace-like experience for your own models.
+
+---
+
+## 📖 Table of Contents
+- [Features](#-features)
+- [Concepts & Architecture](#-concepts--architecture)
+- [Installation](#-installation)
+- [Quick Start](#-quick-start)
+- [Role-Based Guide](#-role-based-guide)
+  - [Admin](#-admin-infrastructure-setup)
+  - [Developer](#-developer-model-creator)
+  - [User](#-user-model-consumer)
+- [Configuration](#-configuration)
+- [Development](#-development)
+- [License](#-license)
+
+---
+
+## ✨ Features
+
+- **Decentralized Storage**: Support for S3 buckets and Local/NFS paths.
+- **Version Control**: Immutable model versions (v1.0, v2.0, etc.).
+- **Team Collaboration**: Shareable `model_repos.yaml` configuration.
+- **Easy CLI**: Intuitive commands for pushing, pulling, and managing models.
+- **Rich Output**: Beautiful terminal output using `rich`.
+
+---
+
+## 🏗 Concepts & Architecture
 
 The tool organizes models in a hierarchical structure:
 
@@ -24,7 +55,7 @@ graph TD
 - **Model**: A named logical entity within a repository.
 - **Version**: An immutable snapshot of model weights (directory).
 
-## Collaborative Workflow
+### Collaborative Workflow
 
 ```mermaid
 sequenceDiagram
@@ -40,56 +71,58 @@ sequenceDiagram
     
     Note over Dev, S3: 2. Development Phase
     Dev->>Dev: Train Model
-    Dev->>S3: aim_cli model push my-repo my-model ...
+    Dev->>S3: aim model push my-repo my-model ...
     
     Note over S3, User: 3. Usage Phase
-    User->>S3: aim_cli repo list
-    User->>S3: aim_cli model pull my-repo my-model ...
+    User->>S3: aim repo list
+    User->>S3: aim model pull my-repo my-model ...
     User->>User: Run Inference
 ```
 
-## Installation & Development
+---
 
-This project uses [uv](https://github.com/astral-sh/uv) for package management.
+## 🚀 Installation
 
-### Prerequisites
-- Install `uv`: `pip install uv` or see [uv docs](https://docs.astral.sh/uv/getting-started/installation/).
-
-### Setup
-1. Clone the repository.
-2. Sync dependencies (creates virtual environment):
-   ```bash
-   uv sync
-   ```
-
-### Running Commands
-You can run the CLI directly using `uv run`:
+### Using `pip`
+You can install the CLI directly from the source:
 
 ```bash
-uv run aim_cli --help
+pip install git+https://github.com/yourusername/aim-cli.git
 ```
 
-Or activate the virtual environment:
+### Using `uv` (Recommended for Dev)
+This project uses [uv](https://github.com/astral-sh/uv) for fast package management.
 
 ```bash
-source .venv/bin/activate
-aim_cli --help
+# Clone the repo
+git clone https://github.com/yourusername/aim-cli.git
+cd aim-cli
+
+# Sync dependencies
+uv sync
+
+# Run directly
+uv run aim --help
 ```
 
-## Role-Based Usage Guide
+---
+
+## 🎯 Role-Based Guide
 
 ### 👩‍💼 Admin (Infrastructure Setup)
 Responsible for configuring repositories and sharing the config.
 
 ```bash
 # 1. Initialize a new repo pointing to S3 bucket
-aim_cli repo create team-vision-repo --type s3 --path s3://my-company-ai-models/vision --region us-east-1
+aim repo create team-vision-repo --type s3 --path s3://my-company-ai-models/vision --region us-east-1
 
 # 2. Check the configuration
-aim_cli repo list
+aim repo list
 
 # 3. Share 'model_repos.yaml' with the team
-git commit model_repos.yaml -m "Add vision team model repo"
+git add model_repos.yaml
+git commit -m "Add vision team model repo"
+git push
 ```
 
 ### 👩‍💻 Developer (Model Creator)
@@ -101,57 +134,77 @@ git pull origin main
 
 # 2. Push a new model version (v1.0)
 # This creates the model entry if it doesn't exist
-aim_cli model push team-vision-repo resnet50-finetuned ./checkpoint_v1 --tag v1.0
+aim model push team-vision-repo resnet50-finetuned ./checkpoint_v1 --tag v1.0
 
 # 3. Push a subsequent version (v2.0)
-aim_cli model push team-vision-repo resnet50-finetuned ./checkpoint_v2 --tag v2.0
+aim model push team-vision-repo resnet50-finetuned ./checkpoint_v2 --tag v2.0
 ```
 
 ### 🙋 User (Model Consumer)
-Responsible for pulling models for inference or deployment.
+Responsible for downloading models for inference or deployment.
 
 ```bash
 # 1. List available models in the repo
-aim_cli model list team-vision-repo
+aim model list team-vision-repo
 
 # 2. Check available versions for a specific model
-aim_cli model versions team-vision-repo resnet50-finetuned
+aim model versions team-vision-repo resnet50-finetuned
 
 # 3. Download the specific version needed
-aim_cli model pull team-vision-repo resnet50-finetuned ./models/resnet50 --tag v1.0
+aim model pull team-vision-repo resnet50-finetuned ./models/resnet50 --tag v1.0
 ```
 
-### 🧹 Maintenance & Cleanup
-Commands for removing data.
+### 🧹 Maintenance
+Commands for cleaning up old data.
 
 ```bash
 # Delete a specific version
-aim_cli model delete-version team-vision-repo resnet50-finetuned --tag v1.0
+aim model delete-version team-vision-repo resnet50-finetuned --tag v1.0
 
 # Delete a model and ALL its versions
-aim_cli model delete team-vision-repo resnet50-finetuned
+aim model delete team-vision-repo resnet50-finetuned
 
-# Delete a repository configuration (does not delete actual data on S3/NFS)
-aim_cli repo delete team-vision-repo
+# Delete a repository configuration (does not delete data on cloud)
+aim repo delete team-vision-repo
 ```
 
-## Usage
+---
 
-Using `uv run`:
+## ⚙️ Configuration
 
-```bash
-# Check info
-uv run aim_cli info
+Configuration is stored in `model_repos.yaml` in the current working directory.
+You can share this file with your team via Git to keep everyone in sync.
 
-# Create a repo (e.g. NFS)
-uv run aim_cli repo create my-repo --type local --path /mnt/nfs/models
-
-# Push a model
-uv run aim_cli model push my-repo my-model ./local-model-v1 --tag v1.0
-
-# Pull a model
-uv run aim_cli model pull my-repo my-model ./downloaded-model --tag v1.0
+Example `model_repos.yaml`:
+```yaml
+repos:
+  team-vision-repo:
+    type: s3
+    path: s3://my-company-ai-models/vision
+    region: us-east-1
+  local-debug-repo:
+    type: local
+    path: /tmp/aim-models
 ```
 
-## Configuration
-Configuration is stored in `model_repos.yaml`. You can share this file with your team.
+---
+
+## 🛠 Development
+
+1. **Install uv**: `pip install uv`
+2. **Clone & Setup**:
+   ```bash
+   git clone ...
+   cd aim-cli
+   uv sync
+   ```
+3. **Run Tests** (if available):
+   ```bash
+   uv run pytest
+   ```
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
