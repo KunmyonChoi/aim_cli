@@ -4,15 +4,35 @@ from typing import List, Optional, Literal
 from pydantic import BaseModel, Field
 from pathlib import Path
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 CONFIG_FILE_NAME = "model_repos.yaml"
 
 class RepoConfig(BaseModel):
     name: str
-    type: Literal["local", "s3"]
+    type: Literal["local", "s3", "sftp"]
     path: str
     region: Optional[str] = None
-    access_key: Optional[str] = None  # In real apps, be careful with secrets
-    secret_key: Optional[str] = None
+    # Passwords/Secrets are excluded from YAML dump but loaded from Env
+    access_key: Optional[str] = Field(None, exclude=True) 
+    secret_key: Optional[str] = Field(None, exclude=True)
+    username: Optional[str] = None
+    password: Optional[str] = Field(None, exclude=True)
+
+    def load_secrets(self):
+        """Populate secrets from environment variables based on convention."""
+        # Convention: AIM_REPO_{NAME}_PASSWORD / SECRET_KEY / ACCESS_KEY
+        normalized_name = self.name.upper().replace("-", "_")
+        
+        if not self.password:
+            self.password = os.getenv(f"AIM_REPO_{normalized_name}_PASSWORD")
+        if not self.secret_key:
+            self.secret_key = os.getenv(f"AIM_REPO_{normalized_name}_SECRET_KEY")
+        if not self.access_key:
+            self.access_key = os.getenv(f"AIM_REPO_{normalized_name}_ACCESS_KEY")
+
 
 class GlobalConfig(BaseModel):
     repos: List[RepoConfig] = Field(default_factory=list)
@@ -50,7 +70,11 @@ def load_config() -> GlobalConfig:
             # Handle empty file case
             if not data:
                 return GlobalConfig()
-            return GlobalConfig(**data)
+            
+            gc = GlobalConfig(**data)
+            for repo in gc.repos:
+                repo.load_secrets()
+            return gc
     except Exception as e:
         print(f"Warning: Failed to load config file: {e}")
         return GlobalConfig()
@@ -58,6 +82,6 @@ def load_config() -> GlobalConfig:
 def save_config(config: GlobalConfig):
     config_path = get_config_path()
     with open(config_path, "w") as f:
-        # exclude_none=True to keep config clean
+        # exclude_defaults=True to keep config clean, and use Field(exclude=True) for secrets
         data = config.model_dump(mode="json", exclude_none=True)
         yaml.dump(data, f, sort_keys=False)

@@ -30,3 +30,4 @@ target_dir/
 
 # OS
 .DS_Store
+.env

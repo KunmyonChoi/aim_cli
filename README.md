@@ -26,7 +26,7 @@ Designed for private infrastructure, offering a HuggingFace-like experience for 
 
 ## ✨ Features
 
-- **Decentralized Storage**: Support for S3 buckets and Local/NFS paths.
+- **Decentralized Storage**: Support for S3 buckets, SFTP servers, and Local/NFS paths.
 - **Version Control**: Immutable model versions (v1.0, v2.0, etc.).
 - **Team Collaboration**: Shareable `model_repos.yaml` configuration.
 - **Easy CLI**: Intuitive commands for pushing, pulling, and managing models.
@@ -103,6 +103,17 @@ uv sync
 
 # Run directly
 uv run aim --help
+
+# Install tool globally
+uv tool install .
+```
+
+### From Source (Global Install)
+If you want to install it globally without `uv`:
+
+```bash
+cd aim-cli
+pip install .
 ```
 
 ---
@@ -114,7 +125,9 @@ Responsible for configuring repositories and sharing the config.
 
 ```bash
 # 1. Initialize a new repo pointing to S3 bucket
-aim repo create team-vision-repo --type s3 --path s3://my-company-ai-models/vision --region us-east-1
+aim repo create team-vision-repo --type s3 --path s3://my-company-ai-models/vision-aim-repo --region us-east-1
+# OR for SFTP
+aim repo create team-sftp-repo --type sftp --path sftp://myserver.com:2222/models-aim-repo --username myuser
 
 # 2. Check the configuration
 aim repo list
@@ -180,11 +193,16 @@ Example `model_repos.yaml`:
 repos:
   team-vision-repo:
     type: s3
-    path: s3://my-company-ai-models/vision
+    path: s3://my-company-ai-models/vision-aim-repo
     region: us-east-1
   local-debug-repo:
     type: local
-    path: /tmp/aim-models
+    path: /tmp/local-aim-repo
+  sftp-team-repo:
+    type: sftp
+    path: sftp://myserver.com:2222/models-aim-repo
+    username: myuser
+    # password: mypassword (optional, prompts if missing)
 ```
 
 ---

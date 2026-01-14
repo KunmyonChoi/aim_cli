@@ -6,6 +6,7 @@ from rich.table import Table
 from aim_cli.config import load_config, RepoConfig
 from aim_cli.storage.local import LocalStorage
 from aim_cli.storage.s3 import S3Storage
+from aim_cli.storage.sftp import SFTPStorage
 
 app = typer.Typer()
 console = Console()
@@ -21,6 +22,8 @@ def get_storage(repo_name: str):
         return LocalStorage(repo.path)
     elif repo.type == "s3":
         return S3Storage(repo.path, region=repo.region, access_key=repo.access_key, secret_key=repo.secret_key)
+    elif repo.type == "sftp":
+        return SFTPStorage(repo.path, username=repo.username, password=repo.password)
     else:
         console.print(f"[bold red]Error:[/bold red] Unknown storage type '{repo.type}'.")
         raise typer.Exit(code=1)

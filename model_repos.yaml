@@ -1,7 +1,0 @@
-repos:
-- name: test-local
-  type: local
-  path: /Users/1111167/.gemini/antigravity/playground/metallic-oort/test_storage
-- name: delete-test-repo
-  type: local
-  path: /Users/1111167/.gemini/antigravity/playground/metallic-oort/test_storage

@@ -7,7 +7,7 @@ name = "aim-cli"
 version = "0.1.0"
 description = "AI Model Weight Manager CLI"
 authors = [
-  { name = "AIM CLI Team", email = "aim-cli@example.com" },
+  { name = "AIM CLI Team", email = "dilly97@gmail.com" },
 ]
 readme = "README.md"
 requires-python = ">=3.9"
@@ -22,6 +22,8 @@ dependencies = [
     "pydantic",
     "pyyaml",
     "boto3",
+    "paramiko",
+    "python-dotenv",
 ]
 
 [project.scripts]

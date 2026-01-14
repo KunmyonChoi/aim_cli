@@ -3,3 +3,4 @@ rich
 pydantic
 pyyaml
 boto3
+paramiko
